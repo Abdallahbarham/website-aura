@@ -1,116 +1,120 @@
+import { useEffect, useState } from 'react'
 
-import { useState } from 'react';
-import { toast } from "@/components/ui/use-toast";
-
-// Define types for blog posts
+// This interface matches the "resource" fields from your backend.
 export interface BlogPost {
-  id: number;
-  title: string;
-  status: string;
-  author: string;
-  date: string;
-  category: string;
-  tags: string[];
-  excerpt: string;
+  id: number
+  title: string
+  excerpt: string
+  category: string
+  tags: string            // Comma-separated tags ("AI, Finance") 
+  readTime: string        // e.g. "5"
+  imageUrl: string        // e.g. "https://..."
+  content: string         // HTML content
+  created_at?: string
+  updated_at?: string
 }
 
+// For creating a new post (without an id)
 export interface NewPostData {
-  title: string;
-  excerpt: string;
-  author: string;
-  category: string;
-  tags: string;
-  status: string;
+  title: string
+  excerpt: string
+  category: string
+  tags: string
+  readTime: string
+  imageUrl: string
+  content: string
 }
 
 export function useBlogPosts() {
-  // Mock data
-  const [posts, setPosts] = useState<BlogPost[]>([
-    { 
-      id: 1, 
-      title: 'AI for Business Transformation', 
-      status: 'Published', 
-      author: 'John Smith',
-      date: '2023-10-15',
-      category: 'AI Strategy',
-      tags: ['AI', 'Business', 'Transformation'],
-      excerpt: 'How artificial intelligence is changing the business landscape...'
-    },
-    { 
-      id: 2, 
-      title: 'Future of Work with AI Integration', 
-      status: 'Draft', 
-      author: 'Jane Doe',
-      date: '2023-10-22',
-      category: 'Workplace',
-      tags: ['AI', 'Future of Work', 'Automation'],
-      excerpt: 'Exploring how AI will reshape the workplace in the coming decade...'
-    },
-    { 
-      id: 3, 
-      title: 'Ethical Considerations in AI Development', 
-      status: 'Scheduled', 
-      author: 'Emily Chen',
-      date: '2023-10-30',
-      category: 'Ethics',
-      tags: ['AI Ethics', 'Development', 'Governance'],
-      excerpt: 'The ethical frameworks that should guide AI development...'
-    },
-    { 
-      id: 4, 
-      title: 'Machine Learning for Beginners', 
-      status: 'Published', 
-      author: 'David Wilson',
-      date: '2023-10-10',
-      category: 'Education',
-      tags: ['ML', 'Beginners', 'Tutorial'],
-      excerpt: 'A gentle introduction to machine learning concepts...'
-    },
-  ]);
+  const [posts, setPosts] = useState<BlogPost[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const deletePost = (id: number) => {
-    setPosts(posts.filter(p => p.id !== id));
-  };
+  // Your Express/Node API endpoint
+  const API_URL = 'http://localhost:3001/api/resources'
 
-  const updatePost = (updatedPost: BlogPost) => {
-    setPosts(posts.map(post => post.id === updatedPost.id ? updatedPost : post));
-  };
+  // ===== LOAD all posts from the server =====
+  useEffect(() => {
+    loadPosts()
+  }, [])
 
-  const createPost = (newPost: NewPostData) => {
-    const post = {
-      id: posts.length + 1,
-      ...newPost,
-      date: new Date().toISOString().split('T')[0],
-      tags: newPost.tags.split(',').map(tag => tag.trim())
-    };
-    
-    setPosts([...posts, post]);
-    return post;
-  };
+  async function loadPosts() {
+    try {
+      setLoading(true)
+      setError(null)
+      const res = await fetch(API_URL)
+      if (!res.ok) {
+        throw new Error('Failed to fetch resources')
+      }
+      const data = await res.json()
+      setPosts(data)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-  const filterPosts = (searchTerm: string, tab: string) => {
-    return posts.filter(post => {
-      // First filter by search term
-      const matchesSearch = 
-        post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        post.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        post.category.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      // Then filter by tab
-      if (tab === 'posts') return matchesSearch;
-      if (tab === 'drafts') return matchesSearch && post.status === 'Draft';
-      if (tab === 'scheduled') return matchesSearch && post.status === 'Scheduled';
-      if (tab === 'published') return matchesSearch && post.status === 'Published';
-      
-      return matchesSearch;
-    });
-  };
+  // ===== CREATE a new post =====
+  async function createPost(data: NewPostData) {
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+      if (!res.ok) {
+        throw new Error('Failed to create resource')
+      }
+      await res.json() // optionally read insertId, etc.
+      // Refresh local list
+      await loadPosts()
+    } catch (err: any) {
+      setError(err.message)
+      throw err
+    }
+  }
+
+  // ===== UPDATE a post =====
+  async function updatePost(id: number, updatedData: Partial<BlogPost>) {
+    try {
+      const res = await fetch(`${API_URL}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedData),
+      })
+      if (!res.ok) {
+        throw new Error('Failed to update resource')
+      }
+      await loadPosts()
+    } catch (err: any) {
+      setError(err.message)
+      throw err
+    }
+  }
+
+  // ===== DELETE a post =====
+  async function deletePost(id: number) {
+    try {
+      const res = await fetch(`${API_URL}/${id}`, {
+        method: 'DELETE'
+      })
+      if (!res.ok) {
+        throw new Error('Failed to delete resource')
+      }
+      await loadPosts()
+    } catch (err: any) {
+      setError(err.message)
+      throw err
+    }
+  }
 
   return {
-    posts,
-    deletePost,
-    updatePost,
+    posts,         // The list of BlogPost objects
+    loading,
+    error,
     createPost,
-    filterPosts
-  };
+    updatePost,
+    deletePost,
+  }
 }
