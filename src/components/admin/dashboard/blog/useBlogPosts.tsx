@@ -1,77 +1,72 @@
-// src/components/admin/dashboard/blog/useBlogPosts.tsx
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
+import { resources } from "../../../resources/resourcesData";
 
 export interface BlogPost {
-  id: number
-  title: string
-  excerpt: string
-  category: string
-  tags: string
-  readTime: string
-  imageUrl: string
-  content: string
-  created_at: string
+  id: number;
+  title: string;
+  excerpt: string;
+  category: string;
+  tags: string;
+  readTime: string;
+  imageUrl: string;
+  content: string;
+  created_at: string;
 }
 
 export function useBlogPosts() {
-  const [posts, setPosts] = useState<BlogPost[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const API_URL = 'http://localhost:3001/api/resources'
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadPosts = async () => {
-      try {
-        const response = await fetch(API_URL)
-        if (!response.ok) throw new Error('Failed to fetch posts')
-        const data = await response.json()
-        setPosts(data)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load posts')
-      } finally {
-        setLoading(false)
-      }
+  useEffect(() => {    
+    try {
+      const formattedPosts: BlogPost[] = resources.map((post) => ({
+        id: Number(post.id),
+        title: post.title,
+        excerpt: post.excerpt,
+        category: post.category,
+        tags: post.tags || "",
+        readTime: post.readTime,
+        imageUrl: post.imageUrl,
+        content: post.content || "",
+        created_at: post.date || new Date().toISOString(),
+      }));
+      setPosts(formattedPosts);
+    } catch (err) {
+      setError('Failed to load posts');
+    } finally {
+      setLoading(false);
     }
-    loadPosts()
-  }, [])
+  }, []);
 
   const createPost = async (postData: Omit<BlogPost, 'id' | 'created_at'>) => {
     try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(postData)
-      })
-      if (!response.ok) throw new Error('Failed to create post')
-      return await response.json()
+      const newPost = {
+        ...postData,
+        id: posts.length + 1, // Assign a new ID
+        created_at: new Date().toISOString(),
+      };
+      setPosts((prevPosts) => [...prevPosts, newPost]); // Correct state update
     } catch (err) {
-      throw err instanceof Error ? err : new Error('Failed to create post')
+      throw new Error('Failed to create post');
     }
-  }
+  };
 
   const updatePost = async (id: number, postData: Partial<BlogPost>) => {
     try {
-      const response = await fetch(`${API_URL}/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(postData)
-      })
-      if (!response.ok) throw new Error('Failed to update post')
+      setPosts(posts.map((p) => (p.id === id ? { ...p, ...postData } : p)));
     } catch (err) {
-      throw err instanceof Error ? err : new Error('Failed to update post')
+      throw new Error('Failed to update post');
     }
-  }
+  };
 
   const deletePost = async (id: number) => {
     try {
-      const response = await fetch(`${API_URL}/${id}`, {
-        method: 'DELETE'
-      })
-      if (!response.ok) throw new Error('Failed to delete post')
+      setPosts(posts.filter((p) => p.id !== id));
     } catch (err) {
-      throw err instanceof Error ? err : new Error('Failed to delete post')
+      throw new Error('Failed to delete post');
     }
-  }
+  };
 
-  return { posts, loading, error, createPost, updatePost, deletePost }
+  return { posts, loading, error, createPost, updatePost, deletePost };
 }

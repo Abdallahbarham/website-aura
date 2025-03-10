@@ -72,7 +72,20 @@ export const resources = [{
   date: "November 5, 2024",
   readTime: "12",
   imageUrl: "https://images.unsplash.com/photo-1491895200222-0fc4a4c35e18?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80"
-}];
+}, {
+  id: 1,
+  title: "Sample Post",
+  excerpt: "This is a sample excerpt.",
+  category: "Technology",
+  tags: "React, JavaScript",
+  readTime: "5 min",
+  imageUrl: "https://via.placeholder.com/150",
+  content: "This is sample content.",
+  created_at: "2025-03-10",
+}
+
+
+];
 
 // Categories for filtering
-export const categories = ["All", "Insights", "Research", "Case Study", "Technology", "Framework", "Best Practices"];
+export const categories = ["All", "Insights", "Research", "Case Study", "Technology", "Framework", "Best Practices", "test"];

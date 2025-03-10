@@ -52,7 +52,7 @@ const BlogPostItem = ({ post, onView, onEdit, onDelete }: BlogPostItemProps) => 
             </span>
             <span className="text-xs text-stone-gray flex items-center">
               <Tag size={12} className="mr-1" />
-              Tags: {post.tags.join(', ')}
+              Tags: {Array.isArray(post.tags) ? post.tags.join(', ') : post.tags}
             </span>
             <span className="text-xs text-stone-gray flex items-center">
               <Calendar size={12} className="mr-1" />

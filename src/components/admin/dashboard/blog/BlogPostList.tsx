@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import BlogPostItem from './BlogPostItem';
+import Index from '@/pages/Index';
 
 interface BlogPostListProps {
   posts: any[];
@@ -23,7 +24,7 @@ const BlogPostList = ({ posts, viewPost, handleEdit, handleDelete }: BlogPostLis
     <div className="space-y-4">
       {posts.map(post => (
         <BlogPostItem
-          key={post.id}
+          key={post.id ?? Index}
           post={post}
           onView={viewPost}
           onEdit={handleEdit}

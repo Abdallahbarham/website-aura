@@ -194,7 +194,7 @@ const BlogManagement = () => {
       console.error(err);
       toast({
         title: 'Error',
-        description: 'Failed to create BlogPost',
+        description: 'Failed to create Blog Post',
         variant: 'destructive'
       });
     }
@@ -276,14 +276,6 @@ const BlogManagement = () => {
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <h2 className="text-2xl font-bold">Blog Management</h2>
         <div className="flex gap-2">
-          <Button
-            variant="neumorphic"
-            className="flex items-center gap-2"
-            onClick={handleCreateNewPost}
-          >
-            <Plus size={16} />
-            New Post
-          </Button>
           <Button
             variant="neumorphic"
             className="flex items-center gap-2"
