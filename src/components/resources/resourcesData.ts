@@ -64,6 +64,14 @@ export const resources = [{
   date: "November 5, 2022",
   readTime: "8",
   imageUrl: "https://images.unsplash.com/photo-1491895200222-0fc4a4c35e18?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80"
+}, {
+  id: "Test-Article",
+  title: "Test",
+  excerpt: "Essential test for effective risk management in volatile market conditions.",
+  category: "Framework",
+  date: "November 5, 2024",
+  readTime: "12",
+  imageUrl: "https://images.unsplash.com/photo-1491895200222-0fc4a4c35e18?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80"
 }];
 
 // Categories for filtering

@@ -16,6 +16,8 @@ import ResourceArticle from "./pages/ResourceArticle";
 import AdminPortal from "./pages/AdminPortal";
 import NotFound from "./pages/NotFound";
 
+
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -36,10 +38,15 @@ const App = () => (
           <Route path="/admin-portal" element={<Layout><AdminPortal /></Layout>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<Layout><NotFound /></Layout>} />
+          {/* ... other routes ... */}
+        <Route path="/resources" element={<Resources />} />
+        {/* dynamic route for a single resource */}
+        <Route path="/resources/:resourceId" element={<ResourceArticle />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );
+
 
 export default App;
