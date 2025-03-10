@@ -116,9 +116,12 @@ const Navbar = () => {
             </Link>
           ))}
           <div className="pt-6 flex flex-col space-y-4">
-            <button className="bg-off-white shadow-neumorph-sm hover:shadow-neumorph-md active:shadow-neumorph-pressed text-rich-black text-sm font-medium px-4 py-3 rounded-lg transition-all duration-300 w-full">
-              Sign In
-            </button>
+          <Link
+            to="src/components/admin/AdminLogin.tsx"
+            className="bg-off-white shadow-neumorph-sm hover:shadow-neumorph-md active:shadow-neumorph-pressed text-rich-black text-sm font-medium px-4 py-3 rounded-lg transition-all duration-300 w-full block"
+          >
+            Sign In
+          </Link> 
             <button className="bg-off-white shadow-neumorph-sm hover:shadow-neumorph-md active:shadow-neumorph-pressed text-champagne text-sm font-medium px-4 py-3 rounded-lg transition-all duration-300 w-full">
               Get Started
             </button>
