@@ -18,9 +18,12 @@ export function useBlogPosts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {    
+  const fetchPosts = async () => {
+    setLoading(true);
     try {
-      const formattedPosts: BlogPost[] = resources.map((post) => ({
+      const response = await fetch('/path/to/php/getPosts.php');
+      const data = await response.json();
+      const formattedPosts: BlogPost[] = data.map((post: any) => ({
         id: Number(post.id),
         title: post.title,
         excerpt: post.excerpt,
@@ -29,7 +32,7 @@ export function useBlogPosts() {
         readTime: post.readTime,
         imageUrl: post.imageUrl,
         content: post.content || "",
-        created_at: post.date || new Date().toISOString(),
+        created_at: post.created_at || new Date().toISOString(),
       }));
       setPosts(formattedPosts);
     } catch (err) {
@@ -37,16 +40,31 @@ export function useBlogPosts() {
     } finally {
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchPosts();
   }, []);
 
   const createPost = async (postData: Omit<BlogPost, 'id' | 'created_at'>) => {
     try {
-      const newPost = {
-        ...postData,
-        id: posts.length + 1, // Assign a new ID
-        created_at: new Date().toISOString(),
-      };
-      setPosts((prevPosts) => [...prevPosts, newPost]); // Correct state update
+      const response = await fetch('/path/to/php/createPost.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(postData)
+      });
+      if (response.ok) {
+        const newPost = {
+          ...postData,
+          id: posts.length + 1, // Assign a new ID
+          created_at: new Date().toISOString(),
+        };
+        setPosts((prevPosts) => [...prevPosts, newPost]); // Correct state update
+      } else {
+        throw new Error('Failed to create post');
+      }
     } catch (err) {
       throw new Error('Failed to create post');
     }
@@ -68,5 +86,5 @@ export function useBlogPosts() {
     }
   };
 
-  return { posts, loading, error, createPost, updatePost, deletePost };
+  return { posts, loading, error, createPost, updatePost, deletePost, fetchPosts };
 }
