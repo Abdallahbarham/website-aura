@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Post</title>
+</head>
+<body>
+    <h1>Update Post</h1>
+    <form id="updatePostForm">
+        <input type="hidden" id="postId" name="id" value="1"> <!-- Change the value to the post ID you want to update -->
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" required><br><br>
+        <label for="excerpt">Excerpt:</label>
+        <input type="text" id="excerpt" name="excerpt" required><br><br>
+        <label for="category">Category:</label>
+        <input type="text" id="category" name="category" required><br><br>
+        <label for="tags">Tags:</label>
+        <input type="text" id="tags" name="tags" required><br><br>
+        <label for="readTime">Read Time:</label>
+        <input type="text" id="readTime" name="readTime" required><br><br>
+        <label for="imageUrl">Image URL:</label>
+        <input type="text" id="imageUrl" name="imageUrl" required><br><br>
+        <label for="content">Content:</label>
+        <textarea id="content" name="content" required></textarea><br><br>
+        <button type="submit">Update Post</button>
+    </form>
+
+    <script>
+        document.getElementById('updatePostForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+
+            try {
+                const response = await fetch('update_post.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    alert('Post updated successfully!');
+                } else {
+                    alert('Failed to update post: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while updating the post.');
+            }
+        });
+    </script>
+</body>
+</html>

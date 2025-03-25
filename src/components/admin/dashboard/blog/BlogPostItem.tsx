@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { BlogPost } from './useBlogPosts';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -13,22 +13,13 @@ import {
 } from 'lucide-react';
 
 interface BlogPostItemProps {
-  post: {
-    id: number;
-    title: string;
-    status: string;
-    author: string;
-    date: string;
-    category: string;
-    tags: string[];
-    excerpt: string;
-  };
-  onView: (post: any) => void;
-  onEdit: (post: any) => void;
-  onDelete: (post: any) => void;
+  post: BlogPost;
+  onView: (post: BlogPost) => void;
+  onEdit: (post: BlogPost) => void;
+  onDelete: (post: BlogPost) => void;
 }
 
-const BlogPostItem = ({ post, onView, onEdit, onDelete }: BlogPostItemProps) => {
+const BlogPostItem: React.FC<BlogPostItemProps> = ({ post, onView, onEdit, onDelete }) => {
   return (
     <Card key={post.id} className="p-4 group" raised intensity="light">
       <div className="flex flex-col lg:flex-row lg:items-center gap-4">
@@ -52,7 +43,7 @@ const BlogPostItem = ({ post, onView, onEdit, onDelete }: BlogPostItemProps) => 
             </span>
             <span className="text-xs text-stone-gray flex items-center">
               <Tag size={12} className="mr-1" />
-              Tags: {Array.isArray(post.tags) ? post.tags.join(', ') : post.tags}
+              Tags: {post.tags}
             </span>
             <span className="text-xs text-stone-gray flex items-center">
               <Calendar size={12} className="mr-1" />
@@ -78,7 +69,7 @@ const BlogPostItem = ({ post, onView, onEdit, onDelete }: BlogPostItemProps) => 
             variant="outline" 
             size="sm" 
             className="bg-off-white shadow-neumorph-sm hover:shadow-neumorph-md"
-            onClick={() => onEdit(post)}
+            onClick={() => onEdit(post)} // Ensure onEdit is called
           >
             <Edit size={16} />
           </Button>

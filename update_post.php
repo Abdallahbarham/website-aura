@@ -4,7 +4,7 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-include 'db_connection.php';
+include 'db_connection.php'; // Include your database configuration file
 
 // Enable error logging
 ini_set('log_errors', 1);
@@ -17,6 +17,7 @@ try {
         throw new Exception('No data received');
     }
 
+    $id = $data['id'] ?? null;
     $title = $data['title'] ?? null;
     $excerpt = $data['excerpt'] ?? null;
     $category = $data['category'] ?? null;
@@ -25,11 +26,12 @@ try {
     $imageUrl = $data['imageUrl'] ?? null;
     $content = $data['content'] ?? null;
 
-    if (!$title || !$excerpt || !$category || !$tags || !$readTime || !$imageUrl || !$content) {
+    if (!$id || !$title || !$excerpt || !$category || !$imageUrl || !$content) {
         throw new Exception('Missing required fields');
     }
 
     // Ensure all parameters are strings
+    $id = (int)$id;
     $title = (string)$title;
     $excerpt = (string)$excerpt;
     $category = (string)$category;
@@ -41,22 +43,24 @@ try {
     // Log the received data for debugging
     error_log('Received data: ' . print_r($data, true));
 
-    $sql = "INSERT INTO resources (title, excerpt, category, tags, readTime, imageUrl, content) VALUES (?, ?, ?, ?, ?, ?, ?)";
-    $stmt = $conn->prepare($sql);
+    $query = "UPDATE resources SET title = ?, excerpt = ?, category = ?, tags = ?, readTime = ?, imageUrl = ?, content = ? WHERE id = ?";
+    $stmt = $conn->prepare($query);
     if (!$stmt) {
         throw new Exception('Failed to prepare statement: ' . $conn->error);
     }
 
     // Log the types and values being bound
-    error_log('Binding parameters: ' . print_r([$title, $excerpt, $category, $tags, $readTime, $imageUrl, $content], true));
+    error_log('Binding parameters: ' . print_r([$title, $excerpt, $category, $tags, $readTime, $imageUrl, $content, $id], true));
 
-    $stmt->bind_param("sssssss", $title, $excerpt, $category, $tags, $readTime, $imageUrl, $content);
+    $stmt->bind_param("sssssssi", $title, $excerpt, $category, $tags, $readTime, $imageUrl, $content, $id);
 
     if ($stmt->execute()) {
-        echo json_encode(['status' => 'success', 'message' => 'Post added successfully!']);
+        echo json_encode(['status' => 'success', 'message' => 'Post updated successfully!']);
     } else {
-        throw new Exception('Failed to add post: ' . $stmt->error);
+        throw new Exception('Failed to update post: ' . $stmt->error);
     }
+
+    $stmt->close();
 } catch (Exception $e) {
     error_log('Error: ' . $e->getMessage()); // Log the error
     echo json_encode(['status' => 'error', 'message' => 'Error: ' . $e->getMessage()]);

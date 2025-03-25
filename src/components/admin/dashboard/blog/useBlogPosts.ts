@@ -9,6 +9,9 @@ export interface BlogPost {
   readTime: string;
   imageUrl: string;
   content: string;
+  status: string; // Add status property
+  author: string; // Add author property
+  date: string; // Add date property
   created_at: string;
 }
 
@@ -104,4 +107,29 @@ export const useBlogPosts = () => {
     deletePost,
     fetchPosts
   };
+};
+
+export const updateBlogPost = async (post: BlogPost) => {
+  const response = await fetch(`/api/blog/${post.id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      title: post.title,
+      excerpt: post.excerpt,
+      category: post.category,
+      tags: post.tags,
+      date: post.date,
+      author: post.author,
+      status: post.status,
+      readTime: post.readTime, // Ensure readTime is included if required
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to update the blog post');
+  }
+
+  return await response.json();
 };

@@ -31,7 +31,7 @@ const getResourceById: RequestHandler = async (req, res, next) => {
 
 const createResource: RequestHandler = async (req, res, next) => {
   try {
-    const { title, excerpt, category, readTime, imageUrl, content } = req.body
+    const { title, excerpt, category, tags, readTime, imageUrl, content } = req.body
     
     if (!title) {
       res.status(400).json({ error: 'Title is required' })
@@ -39,9 +39,9 @@ const createResource: RequestHandler = async (req, res, next) => {
     }
 
     const [result] = await pool.query(
-      `INSERT INTO resources (title, excerpt, category, readTime, imageUrl, content)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [title, excerpt, category, readTime, imageUrl, content]
+      `INSERT INTO resources (title, excerpt, category, tags, readTime, imageUrl, content)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [title, excerpt, category, tags, readTime, imageUrl, content]
     )
     
     res.status(201).json({
@@ -53,13 +53,11 @@ const createResource: RequestHandler = async (req, res, next) => {
   }
 }
 
-// Similar fixes for updateResource and deleteResource...
-
 // Update route
 const updateResource: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params
-    const { title, excerpt, category, readTime, imageUrl, content } = req.body
+    const { title, excerpt, category, tags, readTime, imageUrl, content } = req.body
     
     const [rows] = await pool.query('SELECT * FROM resources WHERE id = ?', [id])
     
@@ -70,9 +68,9 @@ const updateResource: RequestHandler = async (req, res, next) => {
 
     await pool.query(
       `UPDATE resources 
-       SET title = ?, excerpt = ?, category = ?, readTime = ?, imageUrl = ?, content = ?
+       SET title = ?, excerpt = ?, category = ?, tags = ?, readTime = ?, imageUrl = ?, content = ?
        WHERE id = ?`,
-      [title, excerpt, category, readTime, imageUrl, content, id]
+      [title, excerpt, category, tags, readTime, imageUrl, content, id]
     )
     
     res.json({ message: 'Resource updated successfully' })

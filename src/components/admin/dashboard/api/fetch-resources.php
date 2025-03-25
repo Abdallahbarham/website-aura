@@ -4,7 +4,7 @@ header('Content-Type: application/json');
 include 'db_connection.php';
 
 try {
-    $sql = "SELECT title, excerpt, category, readTime, imageUrl, content FROM resources";
+    $sql = "SELECT title, excerpt, category, tags, readTime, imageUrl, content FROM resources";
     $result = $conn->query($sql);
 
     if ($result->num_rows > 0) {

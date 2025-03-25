@@ -27,6 +27,7 @@ const BlogManagement = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [postToDelete, setPostToDelete] = useState<BlogPost | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [newPost, setNewPost] = useState({
     title: '',
     excerpt: '',
@@ -36,47 +37,36 @@ const BlogManagement = () => {
     imageUrl: '',
     content: ''
   });
+  const [editPost, setEditPost] = useState<BlogPost | null>(null);
 
-  const {
-    posts,
-    loading,
-    error,
-    createPost,
-    updatePost,
-    deletePost,
-    fetchPosts // Ensure fetchPosts is defined
-  } = useBlogPosts();
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
-  useEffect(() => {
-    fetchPosts(); // Fetch posts on component mount
-  }, [fetchPosts]);
-
-  const fetchResources = async () => {
+  const fetchPosts = async () => {
+    setLoading(true);
     try {
-      const response = await fetch('http://localhost:1234/src/components/admin/dashboard/api/fetch-resources.php', {
+      const response = await fetch('http://localhost:1234/src/components/admin/dashboard/api/fetch-posts.php', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      if (response.ok) {
-        const result = await response.json();
-        if (result.status === 'success') {
-          console.log('Resources:', result.data);
-          // Handle the fetched resources data as needed
-        } else {
-          console.error(result.message);
-        }
+      const result = await response.json();
+      if (result.status === 'success') {
+        setPosts(result.data);
       } else {
-        console.error('Failed to fetch resources.');
+        setError(result.message);
       }
     } catch (error) {
-      console.error('Error fetching resources:', error);
+      setError('Failed to fetch posts');
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchResources(); // Fetch resources on component mount
+    fetchPosts(); // Fetch posts on component mount
   }, []);
 
   const filterPosts = (search: string, tab: string) => {
@@ -202,6 +192,78 @@ const BlogManagement = () => {
     setNewPost({ ...newPost, [field]: value });
   };
 
+  const handleEditPostFormChange = (field: string, value: string) => {
+    if (editPost) {
+      setEditPost({ ...editPost, [field]: value });
+    }
+  };
+
+  const handleEdit = (post: BlogPost) => {
+    setEditPost(post);
+    setShowEditDialog(true);
+  };
+
+  const saveEditPost = async () => {
+    if (!editPost) return;
+    const postData = {
+      id: editPost.id,
+      title: editPost.title || '?',
+      excerpt: editPost.excerpt || '?',
+      category: editPost.category || '?',
+      tags: editPost.tags
+        .split(',')
+        .map((t) => t.trim())
+        .join(', ') || '?',
+      readTime: editPost.readTime || '?',
+      imageUrl: editPost.imageUrl || '?',
+      content: editPost.content || '?'
+    };
+    console.log('Saving post:', postData); // Debug log
+    try {
+      const response = await fetch('http://localhost:1234/src/components/admin/dashboard/api/update-post.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(postData)
+      });
+      const result = await response.json();
+      console.log('Response from server:', result); // Debug log
+      if (response.ok) {
+        if (result.status === 'success') {
+          setShowEditDialog(false);
+          toast({
+            title: 'Post Updated',
+            description: `The post titled "${editPost.title}" has been updated.`
+          });
+          setEditPost(null);
+          fetchPosts(); // Fetch the latest posts after update
+        } else {
+          throw new Error(result.message);
+        }
+      } else {
+        throw new Error('Failed to update post');
+      }
+    } catch (error) {
+      console.error('Error updating post:', error);
+      let errorMessage = 'Failed to update post';
+      if (error.response) {
+        errorMessage = `Server Error: ${error.response.data.message || error.response.statusText}`;
+      } else if (error.request) {
+        errorMessage = 'Network Error: No response received from the server';
+      } else if (error.message.includes('database')) {
+        errorMessage = 'Database Error: Failed to update post in the database';
+      } else {
+        errorMessage = `Error: ${error.message}`;
+      }
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive'
+      });
+    }
+  };
+
   const viewPost = (post: BlogPost) => {
     toast({
       title: 'View Post',
@@ -216,7 +278,7 @@ const BlogManagement = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ testData: 'This is a test' }),
+        body: JSON.stringify({ testData: 'This is a test' }), // Send only one record
       });
       if (response.ok) {
         const result = await response.json();
@@ -271,7 +333,7 @@ const BlogManagement = () => {
             posts={filteredPosts}
             viewPost={viewPost}
             handleDelete={handleDelete}
-            handleEdit={() => {}} // Add handleEdit
+            handleEdit={handleEdit} // Ensure handleEdit is passed
           />
         </TabsContent>
 
@@ -280,7 +342,7 @@ const BlogManagement = () => {
             posts={filteredPosts}
             viewPost={viewPost}
             handleDelete={handleDelete}
-            handleEdit={() => {}} // Add handleEdit
+            handleEdit={handleEdit} // Ensure handleEdit is passed
           />
         </TabsContent>
 
@@ -289,7 +351,7 @@ const BlogManagement = () => {
             posts={filteredPosts}
             viewPost={viewPost}
             handleDelete={handleDelete}
-            handleEdit={() => {}} // Add handleEdit
+            handleEdit={handleEdit} // Ensure handleEdit is passed
           />
         </TabsContent>
 
@@ -298,7 +360,7 @@ const BlogManagement = () => {
             posts={filteredPosts}
             viewPost={viewPost}
             handleDelete={handleDelete}
-            handleEdit={() => {}} // Add handleEdit
+            handleEdit={handleEdit} // Ensure handleEdit is passed
           />
         </TabsContent>
       </Tabs>
@@ -373,6 +435,69 @@ const BlogManagement = () => {
               Cancel
             </Button>
             <Button onClick={saveNewPost}>Save</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Post */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent>
+          <h3 className="text-xl font-bold mb-4">Edit Post</h3>
+          <div className="space-y-4">
+            <input
+              type="text"
+              placeholder="Title"
+              value={editPost?.title || ''}
+              onChange={(e) => handleEditPostFormChange('title', e.target.value)}
+              className="w-full p-2 border rounded"
+            />
+            <input
+              type="text"
+              placeholder="Excerpt"
+              value={editPost?.excerpt || ''}
+              onChange={(e) => handleEditPostFormChange('excerpt', e.target.value)}
+              className="w-full p-2 border rounded"
+            />
+            <input
+              type="text"
+              placeholder="Category"
+              value={editPost?.category || ''}
+              onChange={(e) => handleEditPostFormChange('category', e.target.value)}
+              className="w-full p-2 border rounded"
+            />
+            <input
+              type="text"
+              placeholder="Tags (comma separated)"
+              value={editPost?.tags || ''}
+              onChange={(e) => handleEditPostFormChange('tags', e.target.value)}
+              className="w-full p-2 border rounded"
+            />
+            <input
+              type="text"
+              placeholder="Read Time"
+              value={editPost?.readTime || ''}
+              onChange={(e) => handleEditPostFormChange('readTime', e.target.value)}
+              className="w-full p-2 border rounded"
+            />
+            <input
+              type="text"
+              placeholder="Image URL"
+              value={editPost?.imageUrl || ''}
+              onChange={(e) => handleEditPostFormChange('imageUrl', e.target.value)}
+              className="w-full p-2 border rounded"
+            />
+            <textarea
+              placeholder="Content"
+              value={editPost?.content || ''}
+              onChange={(e) => handleEditPostFormChange('content', e.target.value)}
+              className="w-full p-2 border rounded"
+            />
+          </div>
+          <div className="mt-4 flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={saveEditPost}>Save</Button> {/* Ensure saveEditPost is called */}
           </div>
         </DialogContent>
       </Dialog>

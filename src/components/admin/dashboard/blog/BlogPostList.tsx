@@ -1,15 +1,16 @@
 import React from 'react';
+import { BlogPost } from './useBlogPosts';
 import { Card } from '@/components/ui/card';
 import BlogPostItem from './BlogPostItem';
 
 interface BlogPostListProps {
-  posts: any[];
-  viewPost: (post: any) => void;
-  handleEdit: (post: any) => void;
-  handleDelete: (post: any) => void;
+  posts: BlogPost[];
+  viewPost: (post: BlogPost) => void;
+  handleEdit: (post: BlogPost) => void;
+  handleDelete: (post: BlogPost) => void;
 }
 
-const BlogPostList = ({ posts, viewPost, handleEdit, handleDelete }: BlogPostListProps) => {
+const BlogPostList: React.FC<BlogPostListProps> = ({ posts, viewPost, handleEdit, handleDelete }) => {
   if (posts.length === 0) {
     return (
       <Card className="p-8 text-center" raised intensity="light">
@@ -25,7 +26,7 @@ const BlogPostList = ({ posts, viewPost, handleEdit, handleDelete }: BlogPostLis
           key={post.id}
           post={post}
           onView={viewPost}
-          onEdit={handleEdit}
+          onEdit={handleEdit} // Ensure handleEdit is passed
           onDelete={handleDelete}
         />
       ))}

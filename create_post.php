@@ -1,5 +1,5 @@
 <?php
-include 'database.php'; // Include your database configuration file
+include 'db_connection.php'; // Include your database configuration file
 
 $data = json_decode(file_get_contents('php://input'), true);
 
@@ -11,7 +11,7 @@ $readTime = $data['readTime'];
 $imageUrl = $data['imageUrl'];
 $content = $data['content'];
 
-$query = "INSERT INTO blog_posts (title, excerpt, category, tags, read_time, image_url, content) VALUES (?, ?, ?, ?, ?, ?, ?)";
+$query = "INSERT INTO resources (title, excerpt, category, tags, readTime, imageUrl, content) VALUES (?, ?, ?, ?, ?, ?, ?)";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("sssssss", $title, $excerpt, $category, $tags, $readTime, $imageUrl, $content);
 

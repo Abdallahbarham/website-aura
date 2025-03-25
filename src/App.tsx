@@ -1,9 +1,8 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Layout from "./components/ui/layout";
 import Index from "./pages/Index";
 import About from "./pages/About";
@@ -16,8 +15,6 @@ import ResourceArticle from "./pages/ResourceArticle";
 import AdminPortal from "./pages/AdminPortal";
 import NotFound from "./pages/NotFound";
 
-
-
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -25,7 +22,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <Router>
         <Routes>
           <Route path="/" element={<Layout><Index /></Layout>} />
           <Route path="/about" element={<Layout><About /></Layout>} />
@@ -38,15 +35,10 @@ const App = () => (
           <Route path="/admin-portal" element={<Layout><AdminPortal /></Layout>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<Layout><NotFound /></Layout>} />
-          {/* ... other routes ... */}
-        <Route path="/resources" element={<Resources />} />
-        {/* dynamic route for a single resource */}
-        <Route path="/resources/:resourceId" element={<ResourceArticle />} />
         </Routes>
-      </BrowserRouter>
+      </Router>
     </TooltipProvider>
   </QueryClientProvider>
 );
-
 
 export default App;

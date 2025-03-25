@@ -26,7 +26,7 @@ if (empty($title) || empty($excerpt) || empty($category) || empty($tags) || empt
     exit();
 }
 
-$sql = "INSERT INTO resources (title, excerpt, category, tags, read_time, image_url, content) VALUES (?, ?, ?, ?, ?, ?, ?)";
+$sql = "INSERT INTO resources (title, excerpt, category, tags, readTime, imageUrl, content) VALUES (?, ?, ?, ?, ?, ?, ?)";
 $stmt = $conn->prepare($sql);
 
 if ($stmt === false) {

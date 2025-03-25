@@ -1,5 +1,8 @@
 <?php
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 include 'db_connection.php';
 
@@ -10,14 +13,22 @@ ini_set('error_log', '/path/to/php-error.log');
 try {
     $data = json_decode(file_get_contents('php://input'), true);
 
-    $id = $data['id'];
-    $title = $data['title'];
-    $excerpt = $data['excerpt'];
-    $category = $data['category'];
-    $tags = $data['tags'];
-    $readTime = $data['readTime'];
-    $imageUrl = $data['imageUrl'];
-    $content = $data['content'];
+    if (!$data) {
+        throw new Exception('No data received');
+    }
+
+    $id = $data['id'] ?? null;
+    $title = $data['title'] ?? null;
+    $excerpt = $data['excerpt'] ?? null;
+    $category = $data['category'] ?? null;
+    $tags = $data['tags'] ?? null;
+    $readTime = $data['readTime'] ?? null;
+    $imageUrl = $data['imageUrl'] ?? null;
+    $content = $data['content'] ?? null;
+
+    if (!$id || !$title || !$excerpt || !$category || !$tags || !$readTime || !$imageUrl || !$content) {
+        throw new Exception('Missing required fields');
+    }
 
     // Ensure all parameters are strings
     $id = (int)$id;
@@ -32,16 +43,16 @@ try {
     // Log the received data for debugging
     error_log('Received data: ' . print_r($data, true));
 
-    $sql = "UPDATE resources SET title = ?, excerpt = ?, category = ?, readTime = ?, imageUrl = ?, content = ? WHERE id = ?";
+    $sql = "UPDATE resources SET title = ?, excerpt = ?, category = ?, tags = ?, readTime = ?, imageUrl = ?, content = ? WHERE id = ?";
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
         throw new Exception('Failed to prepare statement: ' . $conn->error);
     }
 
     // Log the types and values being bound
-    error_log('Binding parameters: ' . print_r([$title, $excerpt, $category, $readTime, $imageUrl, $content, $id], true));
+    error_log('Binding parameters: ' . print_r([$title, $excerpt, $category, $tags, $readTime, $imageUrl, $content, $id], true));
 
-    $stmt->bind_param("ssssssi", $title, $excerpt, $category, $readTime, $imageUrl, $content, $id);
+    $stmt->bind_param("sssssssi", $title, $excerpt, $category, $tags, $readTime, $imageUrl, $content, $id);
 
     if ($stmt->execute()) {
         echo json_encode(['status' => 'success', 'message' => 'Post updated successfully!']);

@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import Navbar from '../components/ui/navbar';
 import ResourceHero from '../components/resources/ResourceHero';
@@ -7,20 +6,52 @@ import ResourceFilters from '../components/resources/ResourceFilters';
 import ResourceList from '../components/resources/ResourceList';
 import Pagination from '../components/resources/Pagination';
 import Newsletter from '../components/resources/Newsletter';
-import { resources, categories } from '../components/resources/resourcesData';
+import { resources as mockResources, categories } from "../components/resources/resourcesData";
+
+interface Resource {
+  id: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  date: string;
+  readTime: string;
+  imageUrl: string;
+}
 
 const Resources = () => {
+  const [resourcesData, setResourcesData] = useState<Resource[]>(mockResources); // Use mock data as initial state
+  const [totalResources, setTotalResources] = useState(mockResources.length); // Set total based on mock data
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("grid");
+  const [currentPage, setCurrentPage] = useState(1);
+  const resourcesPerPage = 10;
 
-  const filteredResources = resources.filter(resource => {
-    const matchesCategory = selectedCategory === "All" || resource.category === selectedCategory;
-    const matchesSearch = resource.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          resource.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
-  
+  useEffect(() => {
+    // Fetch data from the backend API
+    const fetchResources = async () => {
+      try {
+        const response = await fetch(`/api/resources?page=${currentPage}&limit=${resourcesPerPage}`);
+        if (response.ok) {
+          const { resources, total } = await response.json();
+          setResourcesData(resources);
+          setTotalResources(total);
+        } else {
+          console.warn("Failed to fetch resources, using mock data.");
+        }
+      } catch (error) {
+        console.error("Error fetching resources:", error);
+        console.warn("Using mock data due to API error.");
+      }
+    };
+
+    fetchResources();
+  }, [currentPage]);
+
+  const filteredResources = selectedCategory === "All"
+    ? resourcesData
+    : resourcesData.filter(resource => resource.category === selectedCategory);
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -56,7 +87,12 @@ const Resources = () => {
             </Tabs>
           </div>
           
-          <Pagination />
+          <Pagination 
+            currentPage={currentPage} 
+            totalItems={totalResources} 
+            itemsPerPage={resourcesPerPage} 
+            onPageChange={setCurrentPage} 
+          />
         </div>
       </section>
       
